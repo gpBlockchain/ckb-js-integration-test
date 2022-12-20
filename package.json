@@ -1,0 +1,44 @@
+{
+  "name": "ckb-js-integration-test",
+  "description": "test",
+  "license": "BUSL-1.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "1.0.1",
+  "engines": {
+    "node": ">=10"
+  },
+  "dependencies": {
+    "@ckb-lumos/codec": "v0.20.0-alpha.1",
+    "@ckb-lumos/light-client": "v0.20.0-alpha.1",
+    "@ckb-lumos/lumos": "v0.20.0-alpha.1",
+    "@ckb-lumos/rpc": "v0.20.0-alpha.1",
+    "dotenv": "^16.0.1",
+    "mochawesome-merge": "^4.2.1",
+    "npm-run-all": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.6",
+    "@types/mocha": "^5.2.7",
+    "babel-cli": "^6.26.0",
+    "chai": "^4.2.0",
+    "ckb-js-toolkit": "^0.10.2",
+    "decimal.js": "^10.2.1",
+    "mocha": "^9.2.2",
+    "mocha-chai-jest-snapshot": "^1.1.0",
+    "mochawesome": "^7.1.3",
+    "mochawesome-report-generator": "^6.2.0",
+    "prettier": "^2.0.5",
+    "prettier-plugin-solidity": "^1.0.0-alpha.59",
+    "solhint": "^3.2.1",
+    "solhint-plugin-prettier": "^0.0.5",
+    "ts-generator": "^0.1.1",
+    "ts-node": "^8.5.4",
+    "typechain": "^4.0.0",
+    "typescript": "^3.7.3"
+  },
+  "scripts": {
+    "test": "mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome"
+  }
+}

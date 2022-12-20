@@ -1,4 +1,5 @@
 import {RPC_DEBUG_SERVICE} from "../../config/config";
+import fetch from "cross-fetch";
 
 
 export const request = async (

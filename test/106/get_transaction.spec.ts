@@ -87,7 +87,7 @@ describe('get_transaction', function () {
         // todo :wait lumos adapt
         //0x3e8795baab13a6590077fed50bd10153302189492348c6e73948fa741ba8cd3e cycles = null
         let rs = await get_transaction(existTx)
-        expect(rs.cycles).to.be.include("0x")
+        expect(rs.cycles).to.be.equal(null)
     })
 
 

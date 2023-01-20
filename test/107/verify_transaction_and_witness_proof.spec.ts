@@ -9,28 +9,28 @@ describe('verify_transaction_and_witness_proof', function () {
 
     this.timeout(1000_000)
 
-    it("exist proofs",async ()=>{
+    it("exist proofs,should return tx ",async ()=>{
         const block = await RPCClient.getBlock("0xadaa049a601126abb71b08b4d7d522bd26ce50fe68ac75d7ebedd65b41ad8c1d")
         const proof = await get_transaction_and_witness_proof(block.transactions.map(tx=>tx.hash))
         const verifyHashes = await verify_transaction_and_witness_proof(proof)
-        console.log("verifyHashes:",verifyHashes)
-        console.log("block hashes:",block.transactions.map(tx=>tx.hash))
-
-
+        expect(block.transactions.
+        map(tx=>tx.hash)
+            .some(tx => verifyHashes.
+                some(verifyTx=> verifyTx == tx))).to.be.equal(true)
     })
-    it("exist proof",async ()=>{
+    it("exist proof,should return proof's tx",async ()=>{
 
         const block = await RPCClient.getBlock("0xadaa049a601126abb71b08b4d7d522bd26ce50fe68ac75d7ebedd65b41ad8c1d")
         const hashes = [ block.transactions[3].hash]
         const proof = await get_transaction_and_witness_proof(hashes)
         const verifyHashes = await verify_transaction_and_witness_proof(proof)
-        console.log("hashes:",verifyHashes)
+        expect(verifyHashes[0]).to.be.equal(block.transactions[3].hash)
 
     })
 
-    it("block is not exist  ",async ()=>{
+    it("block is not exist,should return Cannot find block ",async ()=>{
         try {
-            const verifyHashes = await verify_transaction_and_witness_proof(
+            await verify_transaction_and_witness_proof(
                 {
                     "block_hash": "0x12930899b1f33ed0544216195f5bcdbc5555800afc60a7d494b68bc7f1cddbc8",
                     "witnesses_proof": {
@@ -44,11 +44,13 @@ describe('verify_transaction_and_witness_proof', function () {
                 }
             )
         }catch (e){
-            expect(e.toString()).to.be.include("")
+            expect(e.toString()).to.be.include("Cannot find block")
+            return;
         }
+        expect.fail("expected :Cannot find block ")
     })
 
-    it("block is not verify block ",async ()=>{
+    it("block is not verify block ,should return Invalid transaction_and_witness proof",async ()=>{
         const block = await RPCClient.getBlock("0xadaa049a601126abb71b08b4d7d522bd26ce50fe68ac75d7ebedd65b41ad8c1d")
         const hashes = [ block.transactions[3].hash]
         const proof = await get_transaction_and_witness_proof(hashes)
@@ -57,18 +59,18 @@ describe('verify_transaction_and_witness_proof', function () {
             await verify_transaction_and_witness_proof(proof)
         }catch (e){
             expect(e.toString()).to.be.include("Invalid")
+            return
         }
-        expect.fail("failed")
+        expect.fail("Invalid transaction_and_witness proof")
     })
-    it("witnesses_proof is wrong",async ()=>{
+    it("witnesses_proof is other tx that tx in the same block ,should return succ",async ()=>{
 
         const block = await RPCClient.getBlock("0xadaa049a601126abb71b08b4d7d522bd26ce50fe68ac75d7ebedd65b41ad8c1d")
         let proof3 = await get_transaction_and_witness_proof([ block.transactions[3].hash])
         let proof4 = await get_transaction_and_witness_proof([ block.transactions[4].hash])
         proof3.witnesses_proof = proof4.witnesses_proof
         const hashes = await verify_transaction_and_witness_proof(proof3)
-        console.log("hashes:",hashes)
-
+        expect(hashes[0]).to.be.equal(block.transactions[3].hash)
     })
 
     it("witnesses_proof is wrong,should return Invalid transaction_and_witness proof",async ()=>{

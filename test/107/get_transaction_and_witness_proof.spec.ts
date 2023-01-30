@@ -142,10 +142,8 @@ describe('get_transaction_and_witness_proof', function () {
             expect.fail("expected failed:Not all transactions found in specified block")
         });
         it("not exist txHash ,not exist block,should return not yet in block",async ()=>{
-            const block1 = await RPCClient.getBlockByNumber("0x1")
-
             try {
-                await get_transaction_and_witness_proof(["0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc41"],block1.header.hash)
+                await get_transaction_and_witness_proof(["0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc41"],"0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc42")
             }catch (e){
                 expect(e.toString()).to.be.include("not yet in block")
                 return ;
@@ -154,8 +152,10 @@ describe('get_transaction_and_witness_proof', function () {
         })
 
         it("not exist txHash , exist block,should return not yet in block",async ()=>{
+            const block1 = await RPCClient.getBlockByNumber("0x1")
+
             try {
-                await get_transaction_and_witness_proof(["0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc41"],"0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc42")
+                await get_transaction_and_witness_proof(["0xfa0072347417d8f9cd328ad52ed71f993abff8923ee19cd50fc56782c7aedc41"],block1.header.hash)
             }catch (e){
                 expect(e.toString()).to.be.include("not yet in block")
                 return ;

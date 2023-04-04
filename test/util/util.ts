@@ -1,7 +1,16 @@
 import {RPC_DEBUG_SERVICE} from "../../config/config";
 import fetch from "cross-fetch";
 
+export async function Sleep(timeout: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+}
 
+export function hex(arrayBuffer) {
+    return Array.prototype.map.call(
+        new Uint8Array(arrayBuffer),
+        n => n.toString(16).padStart(2, "0")
+    ).join("");
+}
 export const request = async (
     id: number,
     ckbIndexerUrl: string,

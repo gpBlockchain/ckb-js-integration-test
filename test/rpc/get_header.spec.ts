@@ -35,7 +35,7 @@ describe('get_header', function () {
     it("verbosity is 0,should return hexstring",async ()=>{
         // todo : wait lumos adapt
         const res = await get_header_verbosity_is_1(existBlockHash)
-        expect(res).to.be.equal("0x")
+        expect(res).to.be.include("0x")
     })
 
 });

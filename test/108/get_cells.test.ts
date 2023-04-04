@@ -1,7 +1,7 @@
 //    script_search_mode - enum, prefix | exact, optional default is `prefix`, controls the search mode of script
 
 import {expect} from "chai";
-import {get_cells, get_transactions, getSearchKeyByMode} from "./util";
+import {get_cells, getSearchKeyByMode} from "./util";
 
 
 describe('get_cells', function () {
@@ -34,15 +34,13 @@ describe('get_cells', function () {
         }
     })
 
-    it("script_search_mode:exact: find cells that ", async () => {
+    it("script_search_mode:exact-2", async () => {
         let searchDemo = getSearchKeyByMode("prefix")
         const cells = await get_cells(searchDemo, "asc", "0xfff", undefined)
+        // find all args
         let argsArr = cells.objects.
-        map(obj=>obj.output.lock.args).
-        filter( (item, index ,arr)=>arr.indexOf(item) === index )
-        argsArr.forEach(args=>{
-            console.log(args)
-        })
+            map(obj=>obj.output.lock.args).
+                filter( (item, index ,arr)=>arr.indexOf(item) === index )
         for (let i = 0; i < argsArr.length; i++) {
             let exactSearch = getSearchKeyByMode("exact",argsArr[i])
             const exactCells = await get_cells(exactSearch, "asc", "0xfff", undefined)

@@ -9,9 +9,7 @@ import {expect} from "chai";
 
 describe('estimate_cycles', function () {
 
-    it("dd",async ()=>{
-        // await
-    })
+
     it("normal tx", async () => {
 
         // get tx input
@@ -46,18 +44,3 @@ export async function estimate_cycles(tx: CKBComponents.RawTransaction) :Promise
         cycles:res.cycles
     };
 }
-
-// async function getDep() :Promise<Cell> {
-//
-// }
-
-
-
-// async function getInputCell() :Promise<Cell>{
-//
-//
-// }
-
-// async function getOutPutCell() Promise<Dep>{
-//
-// }

@@ -1,9 +1,6 @@
-import {CKB_RPC_URL, RPCClient} from "../../config/config";
+import { CKB_RPC_URL} from "../../config/config";
 import {request} from "../util/util";
 import {formatter as paramsFmts} from "@ckb-lumos/rpc/lib/paramsFormatter";
-import {RPC} from "@ckb-lumos/rpc/lib/types/rpc";
-import Cell = RPC.Cell;
-import {RawTransaction} from "@ckb-lumos/base/lib/api";
 import {CKBComponents} from "@ckb-lumos/rpc/lib/types/api";
 import {expect} from "chai";
 

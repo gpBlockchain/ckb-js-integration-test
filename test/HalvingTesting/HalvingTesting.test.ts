@@ -1,11 +1,10 @@
 import {CKB_RPC_URL, RPCClient} from "../../config/config";
 import {BI, since} from "@ckb-lumos/lumos";
-import {request, Sleep} from "../util/util";
-import {number} from "@ckb-lumos/codec";
+import {request} from "../util/util";
 
 // const initial_primary_epoch_reward = 191780821917808
 // const secondary_epoch_reward = 61369863013698
-
+//https://nervoshalving.com/
 describe.skip('HalvingTesting Test', function () {
 
     this.timeout(100000)
@@ -138,8 +137,6 @@ describe.skip('HalvingTesting Test', function () {
         }
         return values;
     }
-
-
 
 
 });

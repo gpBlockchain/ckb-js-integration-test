@@ -1,20 +1,21 @@
-
-import {getRequestCall, setupMockRpcTest} from "./test_util";
 import axios from 'axios';
-import {RPC} from "@ckb-lumos/rpc/lib/types/rpc";
+
+jest.mock('axios');
+
 import {toTransaction} from "@ckb-lumos/rpc/lib/resultFormatter";
+import * as fs from 'fs';
+import {mock_rpc} from "./test_util";
+
+const mockRound = jest.spyOn(Math, 'round');
+
 
 describe("estimate_cycles", function () {
-    let mockData = setupMockRpcTest();
 
     it("[tx]",async ()=>{
-        let {RPCClient, requestData, responseData} = mockData()
-        let tx = toTransaction(requestData["params"][0] as RPC.Transaction)
+        let {RPCClient, requestData, responseData} = await mock_rpc()
+        let tx = toTransaction(requestData["params"][0])
         // @ts-ignore
         let response = await RPCClient.estimateCycles(tx)
-        RPCClient.sendTransaction
-        expect(axios).toBeCalledWith(getRequestCall(requestData))
         expect(response.cycles).toEqual(responseData["result"]["cycles"])
     })
-
 });

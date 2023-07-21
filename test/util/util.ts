@@ -11,6 +11,7 @@ export function hex(arrayBuffer) {
         n => n.toString(16).padStart(2, "0")
     ).join("");
 }
+
 export const request = async (
     id: number,
     ckbIndexerUrl: string,
@@ -46,7 +47,7 @@ export const request = async (
 
     if (data.error !== undefined) {
         if (RPC_DEBUG_SERVICE) {
-            console.log( JSON.stringify(data.error))
+            console.log(JSON.stringify(data.error))
         }
         throw new Error(
             `light client request rpc failed with error: ${JSON.stringify(
@@ -55,7 +56,24 @@ export const request = async (
         );
     }
     if (RPC_DEBUG_SERVICE) {
-        console.log( JSON.stringify(data.result))
+        console.log(JSON.stringify(data.result))
     }
     return data.result;
+};
+
+
+export const get = async (
+    url: string,
+): Promise<any> => {
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (res.status !== 200) {
+        throw new Error(`light client request failed with HTTP code ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
 };

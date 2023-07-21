@@ -37,5 +37,13 @@ jobs:
       - name: Run tests
         id: runtest
         run: |
+          sh prepare.sh
           npm install --save-dev mocha @types/mocha chai @types/chai
-          npm run test
+          npm run build:lumos
+          npm run test-mock
+      - name: Publish reports
+        if: failure()
+        uses: actions/upload-artifact@v2
+        with:
+          name: jfoa-build-reports-${{ runner.os }}
+          path: test-report.html

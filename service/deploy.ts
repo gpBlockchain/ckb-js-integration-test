@@ -18,7 +18,7 @@ export interface ScriptConfig {
     // if hash_type is data, code_hash is ckbHash(data)
     CODE_HASH: string;
 
-    HASH_TYPE: "type" | "data" | "data1";
+    HASH_TYPE: "type" | "data" | "data1"|"data2";
 
     TX_HASH: string;
     // the deploy cell can be found at index of tx's outputs
@@ -34,6 +34,7 @@ export interface ScriptConfig {
 
 export async function deployContractByPath( privateKey: string, path: string, deployType: DeployType): Promise<Transaction> {
     const contractBin = readFileSync(path);
+    console.log("contractBin length:",contractBin.length)
     return await deployContractByArray( privateKey, contractBin, deployType)
 }
 export async function  deployContractByHexString(privateKey: string, hexCode: string, deployType: DeployType): Promise<Transaction> {
@@ -77,7 +78,7 @@ export async function deployContractByArray(privateKey: string, SCRIPTBINARY: Ui
     return signTransaction(txSkeleton, privateKey);
 }
 
-export async function getDeployScriptConfig(txHash: string, outputIndex: number, deployType: DeployType) {
+export async function getDeployScriptConfig(txHash: string, outputIndex: number, deployType: DeployType):Promise<ScriptConfig> {
     // todo get txHash
     // get
     const tx = await RPCClient.getTransaction(txHash)
@@ -88,12 +89,11 @@ export async function getDeployScriptConfig(txHash: string, outputIndex: number,
 
             return {
                 CODE_HASH: codeHash1,
-                HASH_TYPE: "data",
+                HASH_TYPE: "data2",
                 TX_HASH: txHash,
                 INDEX: "0x0",
                 DEP_TYPE: "code",
             };
-            break;
         case DeployType.typeId:
             let codeHash = utils.computeScriptHash(tx.transaction.outputs[outputIndex].type);
             return {

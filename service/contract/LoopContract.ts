@@ -1,14 +1,14 @@
 import { HexString} from "@ckb-lumos/base/lib/primitive";
-import {config, helpers} from "@ckb-lumos/lumos";
+import {Cell, config, helpers} from "@ckb-lumos/lumos";
 import {BI} from "@ckb-lumos/bi";
 import {utils} from "@ckb-lumos/base";
 import {TransactionSkeletonType} from "@ckb-lumos/helpers";
-import {deployContractByPath, DeployType, ScriptConfig} from "../deploy";
-import {Account, generateAccountFromPrivateKey} from "../txService";
-import {CKB_RPC_URL} from "../../config/config";
-import {buildTransaction} from "../transfer";
+import {deployContractByPath, DeployType, getDeployScriptConfig, ScriptConfig} from "../deploy";
+import {Account, buildTransaction, generateAccountFromPrivateKey} from "../txService";
+import {CKB_CONFIG, RPCClient} from "../../config/config";
+import {FeeRate} from "../transfer";
 
-const codeFilePath = "service/contract/LoopContract"
+const codeFilePath = "service/contract/LoopContractBin"
 
 export const LoopContractConfig: ScriptConfig = {
     CODE_HASH: "0x8a8eb94a4fb9c8fbd899f60cb3e0813cc5aca0e03af5c159ae4ede50fde03655",
@@ -18,8 +18,8 @@ export const LoopContractConfig: ScriptConfig = {
     DEP_TYPE: "code"
 }
 
-export const ARG_CPU:HexString = "0x123456"
-export  const ARG_MEM:HexString = "0x12"
+export const ARG_CPU:HexString = "0x02"
+export  const ARG_MEM:HexString = "0x01"
 export class LoopContract {
 
     sc: ScriptConfig;
@@ -34,7 +34,9 @@ export class LoopContract {
     }
     async deploy() :Promise<ScriptConfig>{
         if (this.sc == null){
-            this.sc = await deployContractByPath(CKB_RPC_URL,this.privateKey, codeFilePath, DeployType.data)
+            let tx  = await deployContractByPath(this.privateKey, codeFilePath, DeployType.typeId)
+            let txHash = await RPCClient.sendTransaction(tx)
+            this.sc = await getDeployScriptConfig(txHash,0,DeployType.typeId)
             console.log("deploy msg :",this.sc)
             return this.sc;
         }
@@ -52,7 +54,6 @@ export class LoopContract {
     buildTx(loopCount: number, type: HexString) :Promise<TransactionSkeletonType>{
         console.log('addr:',this.account.address)
         return  buildTransaction({
-            ckbUrl:CKB_RPC_URL,
             from: this.account.address,
             outputCells: [this._gen_out_put_cell(loopCount, type)],
             deps: [{
@@ -61,6 +62,39 @@ export class LoopContract {
                     index: this.sc.INDEX
                 },
                 depType: "code"
+            },{
+                outPoint:{
+                    txHash: CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.TX_HASH,
+                    index: CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.INDEX,
+                },
+                depType:CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE
+            }]
+        })
+    }
+    buildTxWithInput(loopCount: number, type: HexString,inputs:Cell[] ) :Promise<TransactionSkeletonType>{
+        console.log('addr:',this.account.address)
+
+        let outputCell  = this._gen_out_put_cell(loopCount, type)
+        if(BI.from(outputCell.cellOutput.capacity).toBigInt()>= BI.from(inputs[0].cellOutput.capacity).toBigInt()){
+            outputCell.cellOutput.capacity = BI.from(inputs[0].cellOutput.capacity).sub(FeeRate.NORMAL).toHexString()
+        }
+
+        return  buildTransaction({
+            from: this.account.address,
+            outputCells: [outputCell],
+            inputCells:inputs,
+            deps: [{
+                outPoint: {
+                    txHash: this.sc.TX_HASH,
+                    index: this.sc.INDEX
+                },
+                depType: "code"
+            },{
+                outPoint:{
+                    txHash: CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.TX_HASH,
+                    index: CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.INDEX,
+                },
+                depType:CKB_CONFIG.SCRIPTS.SECP256K1_BLAKE160.DEP_TYPE
             }]
         })
     }
@@ -69,7 +103,7 @@ export class LoopContract {
         const toScript = helpers.addressToScript(this.account.address,{config:config.predefined.AGGRON4});
         return {
             cellOutput: {
-                capacity: BI.from(1000).mul(100000000).toHexString(),
+                capacity: BI.from(500).mul(100000000).toHexString(),
                 lock: toScript,
                 type: {
                     codeHash: this.sc.CODE_HASH,

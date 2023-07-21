@@ -34,6 +34,22 @@ export const generateAccountFromPrivateKey = (privKey: string): Account => {
 };
 
 export function signTransaction(txSkeleton: TransactionSkeletonType, privKey: string): Transaction {
+    console.log("------------------")
+    console.log("===input=====")
+    let inputTotal=BI.from(0);
+    let outputToral = BI.from(0);
+    txSkeleton.get("inputs").forEach(cell=>{
+        console.log(BI.from(cell.cellOutput.capacity).toBigInt())
+        inputTotal = inputTotal.add( BI.from(cell.cellOutput.capacity).toBigInt());
+    })
+    console.log("====output====")
+    txSkeleton.get("outputs").forEach(cell=>{
+        console.log(BI.from(cell.cellOutput.capacity).toBigInt())
+        outputToral = outputToral.add(BI.from(cell.cellOutput.capacity).toBigInt())
+    })
+    console.log("fee:",inputTotal.sub(outputToral).toNumber())
+    console.log("------------------")
+
     txSkeleton = commons.common.prepareSigningEntries(txSkeleton);
     const signatures = txSkeleton
         .get("signingEntries")
@@ -114,7 +130,7 @@ export async function buildTransactionWithTxType(txSkeleton: TransactionSkeleton
     for (let i = 0; i < options.outputCells.length; i++) {
         neededCapacity = neededCapacity.add(options.outputCells[i].cellOutput.capacity)
     }
-    //todo 补充txSkeleton的output
+
     for (let i = 0; i < txSkeleton.get("outputs").size; i++) {
         neededCapacity = neededCapacity.add(txSkeleton.get("outputs").get(i).cellOutput.capacity)
     }
@@ -165,19 +181,29 @@ export async function buildTransactionWithTxType(txSkeleton: TransactionSkeleton
         throw new Error("Not enough CKB");
     }
 
-    if (collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
+
+    let outputTotal = BI.from(0)
+
+    let inputTotal = BI.from(0)
+    collected.forEach(cell=>{
+        inputTotal = inputTotal.add(BI.from(cell.cellOutput.capacity))
+    })
+    options.outputCells.forEach(cell=>{
+        outputTotal = outputTotal.add(BI.from(cell.cellOutput.capacity))
+    })
+    if (inputTotal.sub(outputTotal).sub(FeeRate.NORMAL).gt(BI.from('0'))) {
         const changeOutput: Cell = {
             cellOutput: {
-                capacity: collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).toHexString(),
+                capacity: inputTotal.sub(outputTotal).sub(FeeRate.NORMAL).toHexString(),
                 lock: fromScript,
             },
             data: "0x",
         };
         console.log('gen out put extra value ')
-        if (collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).gt(6100000000)) {
+        if (inputTotal.sub(outputTotal).sub(FeeRate.NORMAL).gt(6100000000)) {
             txSkeleton = txSkeleton.update("outputs", (outputs) => outputs.push(changeOutput));
         } else {
-            options.outputCells[0].cellOutput.capacity = collectedSum.sub(neededCapacity).sub(FeeRate.NORMAL).add(options.outputCells[0].cellOutput.capacity).toHexString()
+            options.outputCells[0].cellOutput.capacity = inputTotal.sub(outputTotal).sub(FeeRate.NORMAL).add(options.outputCells[0].cellOutput.capacity).toHexString()
         }
     }
 

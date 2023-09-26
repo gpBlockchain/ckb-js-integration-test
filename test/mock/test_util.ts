@@ -33,3 +33,20 @@ function splitFirstSpace(input: string): [string, string] {
     }
 }
 
+
+export function camelCaseToUnderscore(obj) {
+    if (typeof obj !== 'object' || obj === null) {
+        return obj;
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(item => camelCaseToUnderscore(item));
+    }
+    const result = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            const newKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+            result[newKey] = camelCaseToUnderscore(obj[key]);
+        }
+    }
+    return result;
+}

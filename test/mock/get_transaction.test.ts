@@ -1,4 +1,5 @@
-import {mock_rpc} from "./test_util";
+import {camelCaseToUnderscore, mock_rpc} from "./test_util";
+import {toTransactionWithStatus} from "@ckb-lumos/rpc/lib/resultFormatter";
 
 describe('get_transaction', function () {
 
@@ -41,7 +42,6 @@ describe('get_transaction', function () {
         let {RPCClient, requestData, responseData} = await mock_rpc()
         let tx = await RPCClient.getTransaction(requestData["params"][0])
         expect(tx.txStatus.status).toEqual("rejected")
-        expect(tx.txStatus["reason"]).toEqual(responseData["result"]["tx_status"]["reason"])
-
+        expect(tx.txStatus.reason).toEqual(responseData["result"]["tx_status"]["reason"])
     })
 });

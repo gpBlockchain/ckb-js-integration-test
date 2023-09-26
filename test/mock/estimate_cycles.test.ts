@@ -6,8 +6,6 @@ import {toTransaction} from "@ckb-lumos/rpc/lib/resultFormatter";
 import * as fs from 'fs';
 import {mock_rpc} from "./test_util";
 
-const mockRound = jest.spyOn(Math, 'round');
-
 
 describe("estimate_cycles", function () {
 

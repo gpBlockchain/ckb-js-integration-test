@@ -9,6 +9,7 @@ describe('get_tip_header', function () {
     })
 
     it.skip('[null]', async () => {
+        let {RPCClient, requestData, responseData} = await mock_rpc()
     });
 
     it.skip("[verbosity=0]", async () => {

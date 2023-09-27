@@ -1,6 +1,4 @@
-import axios from 'axios';
 import {camelCaseToUnderscore, mock_rpc} from "./test_util";
-import {RPC} from "@ckb-lumos/rpc";
 
 describe('get_header_by_number', function () {
 
@@ -9,9 +7,20 @@ describe('get_header_by_number', function () {
         let block = await RPCClient.getHeaderByNumber(requestData["params"][0])
         expect(camelCaseToUnderscore(block)).toEqual(responseData['result'])
     });
-    it.skip("[block_number,null]", async () => {
+    it("[block_number,null]", async () => {
+        let {RPCClient, requestData, responseData} = await mock_rpc()
+        let block = await RPCClient.getHeaderByNumber(requestData["params"][0],requestData["params"][1])
+        expect(camelCaseToUnderscore(block)).toEqual(responseData['result'])
     })
-    it.skip("[block_number,verbosity=0]", async () => {
+    it("[block_number,verbosity=0]", async () => {
+        let {RPCClient, requestData, responseData} = await mock_rpc()
+        let block = await RPCClient.getHeaderByNumber(requestData["params"][0],"0x0")
+        expect((block)).toEqual(responseData['result'])
     })
-    it.skip("[block_number,verbosity=1]",async ()=>{})
+    it("[block_number,verbosity=1]",async ()=>{
+        let {RPCClient, requestData, responseData} = await mock_rpc()
+        let block = await RPCClient.getHeaderByNumber(requestData["params"][0],"0x1")
+        expect(camelCaseToUnderscore(block)).toEqual(responseData['result'])
+
+    })
 });

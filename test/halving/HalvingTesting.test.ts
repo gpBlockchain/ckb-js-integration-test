@@ -5,7 +5,7 @@ import {request} from "../util/util";
 // const initial_primary_epoch_reward = 191780821917808
 // const secondary_epoch_reward = 61369863013698
 //https://nervoshalving.com/
-describe.skip('HalvingTesting Test', function () {
+describe('HalvingTesting Test', function () {
 
     this.timeout(100000)
     let initial_primary_epoch_reward;
@@ -43,6 +43,10 @@ describe.skip('HalvingTesting Test', function () {
         let end = BI.from(tipHeader.number).toNumber()
         let begin = BI.from(tipHeader.number).sub(3).toNumber()
         await getBlockRewardRange(begin, end)
+    })
+
+    it("get commit fee", async () => {
+        await getCommitFeeByBlockNumber(BI.from(11370825).toHexString())
     })
 
 
@@ -107,6 +111,39 @@ describe.skip('HalvingTesting Test', function () {
         }
     }
 
+    async function getCommitFeeByBlockNumber(blockNumber: string){
+        /**
+         * get block返回取transactions[1->n].{inputs.previous_output.tx_hash和index}
+         * get_transaction查询该tx_hash返回的outputs[index].capacity为一个input，遍历transactions[1->n]则得到inputs.capacity
+         * get block返回取transactions[1->n].{outputs},遍历transactions[1->n]则得到outputs.capacity
+         * commit_fee = (inputs.capacity - outputs.capacity) * 0.6
+         */
+        let Block =  await RPCClient.getBlockByNumber(blockNumber);
+        let transactions = Block.transactions;
+        let sum_inputs = BI.from(0).toNumber();
+        let sum_outputs = BI.from(0).toNumber();
+        for (let i = 1; i < transactions.length; i++) { //txn
+            let inputs_cap = BI.from(0).toNumber();
+            let outputs_cap = BI.from(0).toNumber();
+            for (let j = 0; j < transactions[i].inputs.length; j++) {
+                let txHash = transactions[i].inputs[j].previousOutput.txHash;
+                let index = BI.from(transactions[i].inputs[j].previousOutput.index).toNumber();
+                let tx = await RPCClient.getTransaction(txHash);
+                let outputs = tx.transaction.outputs;
+                inputs_cap +=  BI.from(outputs[index].capacity).toNumber();
+            }
+            for (let j = 0; j < transactions[i].outputs.length; j++) {
+                outputs_cap +=  BI.from(transactions[i].outputs[j].capacity).toNumber();
+            }
+            console.log(`transaction${i}::inputs: ${inputs_cap} -> outputs: ${outputs_cap}`)
+            sum_inputs += inputs_cap;
+            sum_outputs += outputs_cap;
+        }
+        let commit_fee = 0.06 * (sum_inputs - sum_outputs) / 10000_0000;
+        console.log(`commit_fee:${commit_fee}`);
+
+    }
+
     function getBaseReward(epoch: number, epochLength: number) {
         let reward = initial_primary_epoch_reward;
         if (epoch >= primary_epoch_reward_halving_interval) {
@@ -136,6 +173,5 @@ describe.skip('HalvingTesting Test', function () {
         }
         return values;
     }
-
 
 });

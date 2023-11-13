@@ -6,15 +6,19 @@ export const ACCOUNT_PRIVATE_1 ="0xdd50cac37ec6dd12539a968c1a2cbedda75bd8724f7bc
 // export const CKB_RPC_URL = "http://18.162.235.225:8114"
 
 export const CKB_RPC_URL = "https://testnet.ckbapp.dev"
-export const CKB_PRC_URL1 = "https://testnet.ckbapp.dev"
+export const CKB_PRC_URL_MAINNET = "https://mainnet.ckb.dev/"
 export const CKB_RPC_INDEX_URL = "https://testnet.ckbapp.dev"
 
 // export const CKB_RPC_INDEX_URL = "http://18.162.235.225:8116"
 export const RPC_DEBUG_SERVICE = false
-export const RPCClient = new RPC(CKB_RPC_URL);
 export const RPCClient1 = new RPC(CKB_RPC_URL);
-export let CKB_CONFIG = config.predefined.AGGRON4
-config.initializeConfig(config.predefined.AGGRON4)
+export const RPCClient = new RPC(CKB_PRC_URL_MAINNET);
+export let CKB_CONFIG = config.predefined.LINA;
+config.initializeConfig(config.predefined.LINA);
+
+
+// export let CKB_CONFIG = config.predefined.AGGRON4
+// config.initializeConfig(config.predefined.AGGRON4)
 //     config.createConfig({
 //
 //     PREFIX: "ckt",

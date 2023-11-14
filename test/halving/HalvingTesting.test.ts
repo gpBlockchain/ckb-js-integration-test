@@ -1,13 +1,14 @@
 import {CKB_RPC_URL, RPCClient} from "../../config/config";
 import {BI, since} from "@ckb-lumos/lumos";
 import {request} from "../util/util";
+import {verifyDaoByBlockNum} from "./dao";
 
 // const initial_primary_epoch_reward = 191780821917808
 // const secondary_epoch_reward = 61369863013698
 //https://nervoshalving.com/
 describe('HalvingTesting Test', function () {
 
-    this.timeout(100000)
+    this.timeout(100000000)
     let initial_primary_epoch_reward;
     let secondary_epoch_reward;
     let primary_epoch_reward_halving_interval;
@@ -44,11 +45,24 @@ describe('HalvingTesting Test', function () {
         let begin = BI.from(tipHeader.number).sub(3).toNumber()
         await getBlockRewardRange(begin, end)
     })
+    it("verify block",async ()=>{
+        let tipHeader = await RPCClient.getTipHeader()
+        let end = BI.from(tipHeader.number).toNumber()
+        let begin = BI.from(tipHeader.number).sub(3).toNumber()
+        await verifyBlockRange(begin, end)
+    })
 
     it("get commit fee", async () => {
         await getCommitFeeByBlockNumber(BI.from(11370825).toHexString())
     })
 
+    async function verifyBlockRange(begin:number,end:number){
+        for (let i = begin; i < end; i++) {
+            console.log(`verify block:${i}`)
+            await verifyDaoByBlockNum(BI.from(i).toHexString())
+        }
+
+    }
 
     async function getBlockRewardRange(begin: number, end: number) {
         let arrays = []

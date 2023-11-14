@@ -1,14 +1,15 @@
 import {CKB_RPC_URL, RPCClient} from "../../config/config";
-import {BI, since} from "@ckb-lumos/lumos";
+import {BI, since, Transaction} from "@ckb-lumos/lumos";
 import {request} from "../util/util";
-import {verifyDaoByBlockNum} from "./dao";
+import {checkIsWithdraw2Tx, getWithdrawingCompensation, verifyDaoByBlockNum} from "./dao";
+
 
 // const initial_primary_epoch_reward = 191780821917808
 // const secondary_epoch_reward = 61369863013698
 //https://nervoshalving.com/
 describe('HalvingTesting Test', function () {
 
-    this.timeout(100000000)
+    this.timeout(100000000000000)
     let initial_primary_epoch_reward;
     let secondary_epoch_reward;
     let primary_epoch_reward_halving_interval;
@@ -53,7 +54,11 @@ describe('HalvingTesting Test', function () {
     })
 
     it("get commit fee", async () => {
-        await getCommitFeeByBlockNumber(BI.from(11370825).toHexString())
+        await getCommitFeeByBlockNumber(11074804)
+    })
+
+    it("get proposal reward", async() => {
+        await getProposalsRewardByBlockNumber(11370836)
     })
 
     async function verifyBlockRange(begin:number,end:number){
@@ -125,14 +130,14 @@ describe('HalvingTesting Test', function () {
         }
     }
 
-    async function getCommitFeeByBlockNumber(blockNumber: string){
+    async function getCommitFeeByBlockNumber(blockNumber: number): Promise<number>{
         /**
          * get block返回取transactions[1->n].{inputs.previous_output.tx_hash和index}
          * get_transaction查询该tx_hash返回的outputs[index].capacity为一个input，遍历transactions[1->n]则得到inputs.capacity
          * get block返回取transactions[1->n].{outputs},遍历transactions[1->n]则得到outputs.capacity
          * commit_fee = (inputs.capacity - outputs.capacity) * 0.6
          */
-        let Block =  await RPCClient.getBlockByNumber(blockNumber);
+        let Block =  await RPCClient.getBlockByNumber(BI.from(blockNumber - 11).toHexString());
         let transactions = Block.transactions;
         let sum_inputs = BI.from(0).toNumber();
         let sum_outputs = BI.from(0).toNumber();
@@ -144,6 +149,10 @@ describe('HalvingTesting Test', function () {
                 let index = BI.from(transactions[i].inputs[j].previousOutput.index).toNumber();
                 let tx = await RPCClient.getTransaction(txHash);
                 let outputs = tx.transaction.outputs;
+                if (await checkIsWithdraw2Tx(txHash)) {
+                    const completed_withdrawals_capacities = await getWithdrawingCompensation(txHash)
+                    inputs_cap +=  BI.from(outputs[index].capacity).add(completed_withdrawals_capacities).toNumber();
+                }
                 inputs_cap +=  BI.from(outputs[index].capacity).toNumber();
             }
             for (let j = 0; j < transactions[i].outputs.length; j++) {
@@ -153,9 +162,69 @@ describe('HalvingTesting Test', function () {
             sum_inputs += inputs_cap;
             sum_outputs += outputs_cap;
         }
-        let commit_fee = 0.06 * (sum_inputs - sum_outputs) / 10000_0000;
+        let commit_fee = 0.6 * (sum_inputs - sum_outputs) / 10000_0000;
         console.log(`commit_fee:${commit_fee}`);
+        return commit_fee;
+    }
 
+    async function getProposalsRewardByBlockNumber(blockNumber: number): Promise<number>{
+        /**
+         * (N - 11) + 2 -> (N - 11) + 10 = N - 9 -> N -1 Block遍历确认并且N - 11中提交的交易，为所有符合条件交易手续费总和的40%
+         * 遍历 (N - 11) + 2  ~ (N - 11) + 10,看以上交易是否被确认并查看手续费
+         *
+         */
+        let txs:Transaction[] = [];
+        for (let j = 0; j < 11; j++) {
+            let Block =  await RPCClient.getBlockByNumber(BI.from(blockNumber - 11 + 2 + j).toHexString());// N - 9 -> N -1 Block
+            for (let k = 0; k < Block.transactions.length; k++) {
+                const proposals = await getProposals(blockNumber);
+                console.log(`N-9 -> N-1 tx:${Block.transactions[k].hash}`)
+                if (proposals.includes(Block.transactions[k].hash.substring(0, 22))) {
+                    console.log(`found proposals tx:${Block.transactions[k].hash}`);
+                    txs.push(Block.transactions[k])
+                }
+            }
+        }
+        return await calFeeByTxHash(txs);
+    }
+
+    async function getProposals(blockNumber: number):Promise<string[]>{
+        let proposals: string[] = [];
+        let Block =  await RPCClient.getBlockByNumber(BI.from(blockNumber - 11).toHexString());
+        for (let i = 0; i < Block.proposals.length; i++) {
+            console.log(`need found N-11 proposal tx:${Block.proposals[i]}`)
+            proposals.push(Block.proposals[i])
+        }
+        return proposals;
+    }
+
+    async function calFeeByTxHash(transactions: Transaction[]):Promise<number>{
+        let sum_inputs = BI.from(0).toNumber();
+        let sum_outputs = BI.from(0).toNumber();
+        for (let i = 1; i < transactions.length; i++) { //txn
+            let inputs_cap = BI.from(0).toNumber();
+            let outputs_cap = BI.from(0).toNumber();
+            for (let j = 0; j < transactions[i].inputs.length; j++) {
+                let txHash = transactions[i].inputs[j].previousOutput.txHash;
+                let index = BI.from(transactions[i].inputs[j].previousOutput.index).toNumber();
+                let tx = await RPCClient.getTransaction(txHash);
+                let outputs = tx.transaction.outputs;
+                if (await checkIsWithdraw2Tx(txHash)) {
+                    const completed_withdrawals_capacities = await getWithdrawingCompensation(txHash)
+                    inputs_cap +=  BI.from(outputs[index].capacity).add(completed_withdrawals_capacities).toNumber();
+                }
+                inputs_cap +=  BI.from(outputs[index].capacity).toNumber();
+            }
+            for (let j = 0; j < transactions[i].outputs.length; j++) {
+                outputs_cap +=  BI.from(transactions[i].outputs[j].capacity).toNumber();
+            }
+            console.log(`transaction${i}::inputs: ${inputs_cap} -> outputs: ${outputs_cap}`)
+            sum_inputs += inputs_cap;
+            sum_outputs += outputs_cap;
+        }
+        let proposal_fee = 0.4 * (sum_inputs - sum_outputs) / 10000_0000;
+        console.log(`proposal_fee:${proposal_fee}`);
+        return proposal_fee;
     }
 
     function getBaseReward(epoch: number, epochLength: number) {

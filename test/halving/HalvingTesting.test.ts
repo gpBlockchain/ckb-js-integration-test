@@ -135,7 +135,7 @@ describe('HalvingTesting Test', function () {
 
         }
 
-    }, 10000000000)
+    })
 
     it.skip("get proposal reward", async () => {
         await getProposalsRewardByBlockNumber(11370836)

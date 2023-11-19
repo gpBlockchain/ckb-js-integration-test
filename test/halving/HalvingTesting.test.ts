@@ -64,11 +64,11 @@ describe('HalvingTesting Test', function () {
         let before_11_block_hash = await RPCClient.getBlockHash(BI.from(s).sub(11).toHexString())
 
         // get EconomicState
-        console.log("block_hash:", block_hash)
+        // console.log("block_hash:", block_hash)
         const economicState = await RPCClient.getBlockEconomicState(block_hash)
-        console.log("economicState:", JSON.stringify(economicState))
+        // console.log("economicState:", JSON.stringify(economicState))
         const before_11_economicState = await RPCClient.getBlockEconomicState(before_11_block_hash)
-        console.log("before_11_economicState:", JSON.stringify(before_11_economicState))
+        // console.log("before_11_economicState:", JSON.stringify(before_11_economicState))
 
         // verify proposal fee
         // let proposal_fee = await getProposalsRewardByBlockNumber(BI.from(s).toNumber())

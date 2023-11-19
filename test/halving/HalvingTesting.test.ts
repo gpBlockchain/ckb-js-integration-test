@@ -39,7 +39,7 @@ describe('HalvingTesting Test', function () {
         console.log("secondary_epoch_reward:", BI.from(conses["secondary_epoch_reward"]).toNumber())
     })
 
-    it.skip("get block Reward", async () => {
+    it("get block Reward", async () => {
 
         let tipHeader = await RPCClient.getTipHeader()
         let end = BI.from(tipHeader.number).toNumber()
@@ -53,6 +53,15 @@ describe('HalvingTesting Test', function () {
         await verifyBlockRange(begin, end)
     })
 
+    it.skip("print verify block half ",async ()=>{
+        await getBlockRewardRange(11487785, 11487795)
+    })
+    it.skip("verify block  half ",async ()=>{
+        //11487788
+        // begin :11487785 -> 20 11487795
+        await verifyBlockRange(11487785, 11487795)
+    })
+
     it.skip("get commit fee", async () => {
         await getCommitFeeByBlockNumber(11074804)
     })
@@ -60,12 +69,10 @@ describe('HalvingTesting Test', function () {
     async function verifyCellBaseFeeByNum(s: string) {
         let bool = true;
         // get hash
-        let block_hash = await RPCClient.getBlockHash(s)
         let before_11_block_hash = await RPCClient.getBlockHash(BI.from(s).sub(11).toHexString())
 
         // get EconomicState
         // console.log("block_hash:", block_hash)
-        const economicState = await RPCClient.getBlockEconomicState(block_hash)
         // console.log("economicState:", JSON.stringify(economicState))
         const before_11_economicState = await RPCClient.getBlockEconomicState(before_11_block_hash)
         // console.log("before_11_economicState:", JSON.stringify(before_11_economicState))
@@ -85,13 +92,14 @@ describe('HalvingTesting Test', function () {
         }
 
         let block = await RPCClient.getBlockByNumber(s)
-        let rewardBLock = await RPCClient.getBlockByNumber(BI.from(s).sub(BI.from("12")).toHexString())
-        let epoch = since.parseEpoch(block.header.epoch)
+        let rewardBLock = await RPCClient.getBlockByNumber(BI.from(s).sub(BI.from("11")).toHexString())
+        let epoch = since.parseEpoch(rewardBLock.header.epoch)
         let baseReward = getBaseReward(epoch.number, epoch.length)
         baseReward = Math.floor(baseReward * 10 ** 8)
-        if (!BI.from(baseReward).eq(economicState.issuance.primary)) {
-            console.error(`primary is not eq, ${BI.from(baseReward).toBigInt()}!= ${BI.from(economicState.issuance.primary).toBigInt()}`);
+        if (!BI.from(baseReward).eq(before_11_economicState.issuance.primary)) {
+            console.error(`primary is not eq, ${BI.from(baseReward).toBigInt()}!= ${BI.from(before_11_economicState.issuance.primary).toBigInt()}`);
             bool = false
+            throw new Error("baseReward is error !!!!")
         }
         // let secondaryReward = await getSecondeReward(epoch.length, rewardBLock.header.dao)
         // if (!BI.from(secondaryReward).eq(economicState.issuance.secondary)) {
@@ -117,7 +125,7 @@ describe('HalvingTesting Test', function () {
                     let dao_result = true;
                     // todo verify cell base fee
                     console.log(`verify cell base fee ,block num:${i}`)
-                    let fee_result = await verifyCellBaseFeeByNum(BI.from(i).sub(11).toHexString())
+                    let fee_result = await verifyCellBaseFeeByNum(BI.from(i).toHexString())
                     // @ts-ignore
                     if (fee_result == false || dao_result == false) {
                         console.error(`block num:${i},verify dao:${dao_result},verify cell base fee:${fee_result}`)
@@ -199,7 +207,7 @@ describe('HalvingTesting Test', function () {
         let epoch = since.parseEpoch(block.header.epoch)
         let baseReward = getBaseReward(epoch.number, epoch.length)
         let secondaryReward = await getSecondeReward(epoch.length, rewardBLock.header.dao)
-        let total = baseReward + secondaryReward.toNumber()
+        let total = baseReward + secondaryReward.div(10 ** 10).toNumber()
         return {
             blockNum: BI.from(blockNumber).toNumber(),
             QueryReward: BI.from(block.transactions[0].outputs[0].capacity).toNumber() / 100000000,

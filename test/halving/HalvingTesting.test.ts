@@ -110,7 +110,9 @@ describe('HalvingTesting Test', function () {
             let new_tip_number = await RPCClient.getTipBlockNumber()
             for (let i = BI.from(current_height).toNumber(); i < BI.from(new_tip_number).toNumber(); i++) {
                 try {
-                    console.log(`---------verify dao ,block num:${i}--------------------------------------------`)
+                    let rewardBLock = await RPCClient.getBlockByNumber(BI.from(i).toHexString())
+                    let epoch = since.parseEpoch(rewardBLock.header.epoch)
+                    console.log(`---------verify dao ,block num:${i}, epoch:${BI.from(epoch.number)}index :${BI.from(epoch.index)},epoch length:${BI.from(epoch.length)}--------------------------------------------`)
                     // let dao_result = await verifyDaoByBlockNum(BI.from(i).toHexString())
                     let dao_result = true;
                     // todo verify cell base fee

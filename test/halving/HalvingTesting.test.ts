@@ -229,7 +229,17 @@ describe('HalvingTesting Test', function () {
 
     function roundTo8thDecimal(num: number): number {
         const factor = Math.pow(10, 8);
-        return Math.floor(num * factor) / factor + 0.00000001;
+        const roundedNum = Math.floor(num * factor) / factor;
+
+        // 获取第 9 位的值
+        const ninthDigit = Math.floor(num * factor * 10) % 10;
+
+        // 如果第 9 位不为 0，则将第 8 位加 1
+        if (ninthDigit !== 0) {
+            return roundedNum + 0.00000001;
+        } else {
+            return roundedNum;
+        }
     }
 
 

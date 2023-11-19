@@ -162,7 +162,7 @@ describe('HalvingTesting Test', function () {
             sum_inputs += inputs_cap;
             sum_outputs += outputs_cap;
         }
-        let commit_fee = 0.6 * (sum_inputs - sum_outputs) / 10000_0000;
+        let commit_fee = roundTo8thDecimal(0.6 * (sum_inputs - sum_outputs) / 10000_0000);
         console.log(`commit_fee:${commit_fee}`);
         return commit_fee;
     }
@@ -222,10 +222,16 @@ describe('HalvingTesting Test', function () {
             sum_inputs += inputs_cap;
             sum_outputs += outputs_cap;
         }
-        let proposal_fee = 0.4 * (sum_inputs - sum_outputs) / 10000_0000;
+        let proposal_fee = roundTo8thDecimal(0.4 * (sum_inputs - sum_outputs) / 10000_0000);
         console.log(`proposal_fee:${proposal_fee}`);
         return proposal_fee;
     }
+
+    function roundTo8thDecimal(num: number): number {
+        const factor = Math.pow(10, 8);
+        return Math.round(num * factor) / factor;
+    }
+
 
     function getBaseReward(epoch: number, epochLength: number) {
         let reward = initial_primary_epoch_reward;

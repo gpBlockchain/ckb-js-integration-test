@@ -229,7 +229,7 @@ describe('HalvingTesting Test', function () {
 
     function roundTo8thDecimal(num: number): number {
         const factor = Math.pow(10, 8);
-        return Math.round(num * factor) / factor;
+        return Math.floor(num * factor) / factor + 0.00000001;
     }
 
 

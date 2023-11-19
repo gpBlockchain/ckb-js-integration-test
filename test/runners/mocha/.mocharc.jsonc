@@ -3,8 +3,6 @@
         "test/runners/mocha/init.js"
     ],
     "spec": [
-        "test/106/*ts",
-        "test/105/*ts",
-        "tst/rpc/*ts"
+        "test/halving/*ts"
     ]
 }

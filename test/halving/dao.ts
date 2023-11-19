@@ -9,7 +9,7 @@ import {EpochSinceValue} from "@ckb-lumos/base/lib/since";
 import {CKBComponents} from "@ckb-lumos/rpc/lib/types/api";
 
 
-async function unpackHeaderDao(dao: string): Promise<{ C: BI, AR: BI, S: BI, U: BI }> {
+export async function unpackHeaderDao(dao: string): Promise<{ C: BI, AR: BI, S: BI, U: BI }> {
     let ret = extractDaoDataCompatible(dao)
     return {
         C: ret['c'],
@@ -23,21 +23,42 @@ export async function verifyDaoByBlockNum(blockNum: string): Promise<boolean> {
     let block = await RPCClient.getBlockByNumber(blockNum)
     let daoMsg = await unpackHeaderDao(block.header.dao)
     let calculateDaoMsg = await calculateDao(blockNum)
-    if (calculateDaoMsg.AR.eq(daoMsg.AR) &&
-        calculateDaoMsg.S.eq(daoMsg.S) &&
-        calculateDaoMsg.U.eq(daoMsg.U) &&
-        calculateDaoMsg.C.eq(daoMsg.C)
-    ) {
-        return true
-    }
-    console.log("--- calculateDaoMsg--- ")
-    console.table(calculateDaoMsg)
-    console.log("--- daoMsg ---- ")
-    console.log("C:", daoMsg.C.toBigInt())
-    console.log("AR:", daoMsg.AR.toBigInt())
-    console.log("S:", daoMsg.S.toBigInt())
-    console.log("U:", daoMsg.U.toBigInt())
 
+    let ret = true;
+    if (!calculateDaoMsg.AR.eq(daoMsg.AR)) {
+        console.error(`AR not eq:${calculateDaoMsg.AR.toBigInt()} != ${daoMsg.AR.toBigInt()}`)
+        ret = false;
+    }
+    if (!calculateDaoMsg.U.eq(daoMsg.U)) {
+        console.error(`U not eq:${calculateDaoMsg.U.toBigInt()} != ${daoMsg.U.toBigInt()}`)
+        ret = false;
+    }
+    if (!calculateDaoMsg.S.eq(daoMsg.S)) {
+        console.error(`S not eq:${calculateDaoMsg.S.toBigInt()} != ${daoMsg.S.toBigInt()}`)
+        ret = false;
+    }
+    if (!calculateDaoMsg.C.eq(daoMsg.C)) {
+        console.error(`C not eq:${calculateDaoMsg.C.toBigInt()} != ${daoMsg.C.toBigInt()}`)
+        ret = false;
+    }
+    if (ret) {
+        return true;
+    }
+    // if (calculateDaoMsg.AR.eq(daoMsg.AR) &&
+    //     calculateDaoMsg.S.eq(daoMsg.S) &&
+    //     calculateDaoMsg.U.eq(daoMsg.U) &&
+    //     calculateDaoMsg.C.eq(daoMsg.C)
+    // ) {
+    //     return true
+    // }
+    console.error("--- calculateDaoMsg--- ")
+    console.table(calculateDaoMsg)
+    console.error("--- daoMsg ---- ")
+    console.error("C:", daoMsg.C.toBigInt())
+    console.error("AR:", daoMsg.AR.toBigInt())
+    console.error("S:", daoMsg.S.toBigInt())
+    console.error("U:", daoMsg.U.toBigInt())
+    return ret;
 }
 
 async function calculateDao(blockNum: string): Promise<{

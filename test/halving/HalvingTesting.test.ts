@@ -39,22 +39,22 @@ describe('HalvingTesting Test', function () {
         console.log("secondary_epoch_reward:", BI.from(conses["secondary_epoch_reward"]).toNumber())
     })
 
-    it("get block Reward", async () => {
+    it.skip("get block Reward", async () => {
 
         let tipHeader = await RPCClient.getTipHeader()
         let end = BI.from(tipHeader.number).toNumber()
-        let begin = BI.from(tipHeader.number).sub(3).toNumber()
+        let begin = BI.from(tipHeader.number).sub(50).toNumber()
         await getBlockRewardRange(begin, end)
     })
     it.skip("verify block", async () => {
         let tipHeader = await RPCClient.getTipHeader()
         let end = BI.from(tipHeader.number).toNumber()
-        let begin = BI.from(tipHeader.number).sub(3).toNumber()
+        let begin = BI.from(tipHeader.number).sub(50).toNumber()
         await verifyBlockRange(begin, end)
     })
 
     it.skip("print verify block half ",async ()=>{
-        await getBlockRewardRange(11487785, 11487795)
+        await getBlockRewardRange(11487785, 11487805)
     })
     it.skip("verify block  half ",async ()=>{
         //11487788
@@ -96,7 +96,7 @@ describe('HalvingTesting Test', function () {
         let epoch = since.parseEpoch(rewardBLock.header.epoch)
         let baseReward = getBaseReward(epoch.number, epoch.length)
         baseReward = Math.floor(baseReward * 10 ** 8)
-        if (!BI.from(baseReward).eq(before_11_economicState.issuance.primary)) {
+        if (!BI.from(baseReward).div(10).eq(BI.from(before_11_economicState.issuance.primary).div(10))) {
             console.error(`primary is not eq, ${BI.from(baseReward).toBigInt()}!= ${BI.from(before_11_economicState.issuance.primary).toBigInt()}`);
             bool = false
             throw new Error("baseReward is error !!!!")

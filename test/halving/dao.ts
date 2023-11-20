@@ -219,10 +219,10 @@ async function get_primary_issuance(epoch: EpochSinceValue): Promise<BI> {
     let initial_primary_epoch_reward = BI.from(conses["initial_primary_epoch_reward"])
     let primary_epoch_reward_halving_interval = BI.from(conses["primary_epoch_reward_halving_interval"])
     let reward = initial_primary_epoch_reward.div(epoch.length)
-    let mod_number = initial_primary_epoch_reward.mod(epoch.length)
     if (epoch.number >= primary_epoch_reward_halving_interval.toNumber()) {
         reward = reward.div(2)
     }
+    let mod_number = initial_primary_epoch_reward.div(2).mod(epoch.length)
     if (epoch.index < mod_number.toNumber()) {
         reward = reward.add(1)
     }

@@ -112,7 +112,8 @@ describe('HalvingTesting Test', function () {
     //43.992733343
 
     it("verify current", async () => {
-        let current_height = await RPCClient.getTipBlockNumber()
+        // let current_height = await RPCClient.getTipBlockNumber()
+        let current_height = BI.from(11487785).toHexString();
         while (true) {
             // 查询最新区块
             let new_tip_number = await RPCClient.getTipBlockNumber()

@@ -30,7 +30,7 @@ describe('HalvingTesting Test', function () {
         console.log("length:", BI.from(epoch.length).toNumber())
     })
 
-    it.skip("get conses", async () => {
+    it("get conses", async () => {
         const conses = await request(1, CKB_RPC_URL, "get_consensus", [])
         // 一级奖励: 191780821917808
         console.log("initial_primary_epoch_reward:", BI.from(conses["initial_primary_epoch_reward"]).toNumber())
@@ -87,6 +87,7 @@ describe('HalvingTesting Test', function () {
         // verify 手续费
         let fee = await getCommitFeeByBlockNumber(BI.from(s).toNumber())
         if (!BI.from(fee).div(10).eq(BI.from(before_11_economicState.minerReward.committed).div(10))) {
+            console.debug(`when BlockNumber: ${BI.from(s).toNumber()}`)
             console.error(`committed is not eq, ${BI.from(fee).toBigInt()} != ${BI.from(before_11_economicState.minerReward.committed)}`);
             bool = false;
         }

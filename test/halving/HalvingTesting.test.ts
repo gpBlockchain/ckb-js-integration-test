@@ -94,7 +94,7 @@ describe('HalvingTesting Test', function () {
         let block = await RPCClient.getBlockByNumber(s)
         let rewardBLock = await RPCClient.getBlockByNumber(BI.from(s).sub(BI.from("11")).toHexString())
         let epoch = since.parseEpoch(rewardBLock.header.epoch)
-        let baseReward = getBaseReward(epoch.number, epoch.length)
+        let baseReward = getBaseReward(epoch.number, epoch.length,epoch.index)
         baseReward = Math.floor(baseReward * 10 ** 8)
         if (!BI.from(baseReward).div(10).eq(BI.from(before_11_economicState.issuance.primary).div(10))) {
             console.error(`primary is not eq, ${BI.from(baseReward).toBigInt()}!= ${BI.from(before_11_economicState.issuance.primary).toBigInt()}`);
@@ -205,7 +205,7 @@ describe('HalvingTesting Test', function () {
         let block = await RPCClient.getBlockByNumber(blockNumber)
         let rewardBLock = await RPCClient.getBlockByNumber(BI.from(blockNumber).sub(BI.from("12")).toHexString())
         let epoch = since.parseEpoch(block.header.epoch)
-        let baseReward = getBaseReward(epoch.number, epoch.length)
+        let baseReward = getBaseReward(epoch.number, epoch.length,epoch.index)
         let secondaryReward = await getSecondeReward(epoch.length, rewardBLock.header.dao)
         let total = baseReward + secondaryReward.div(10 ** 10).toNumber()
         return {
@@ -335,11 +335,16 @@ describe('HalvingTesting Test', function () {
     }
 
 
-    function getBaseReward(epoch: number, epochLength: number) {
+    function getBaseReward(epoch: number, epochLength: number, epochIndex: number) {
         let reward = initial_primary_epoch_reward;
         if (epoch >= primary_epoch_reward_halving_interval) {
             reward = reward / 2
         }
+        let add_other_balance = reward / 2 % epochLength
+        if (epochIndex < add_other_balance) {
+            reward = reward + 1;
+        }
+
         return reward / (epochLength * 100000000)
     }
 

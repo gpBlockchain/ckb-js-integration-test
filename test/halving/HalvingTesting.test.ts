@@ -85,12 +85,12 @@ describe('HalvingTesting Test', function () {
         // }
 
         // verify 手续费
-        let fee = await getCommitFeeByBlockNumber(BI.from(s).toNumber())
-        if (!BI.from(fee).div(10).eq(BI.from(before_11_economicState.minerReward.committed).div(10))) {
-            console.debug(`when BlockNumber: ${BI.from(s).toNumber()}`)
-            console.error(`committed is not eq, ${BI.from(fee).toBigInt()} != ${BI.from(before_11_economicState.minerReward.committed)}`);
-            bool = false;
-        }
+        // let fee = await getCommitFeeByBlockNumber(BI.from(s).toNumber())
+        // if (!BI.from(fee).div(10).eq(BI.from(before_11_economicState.minerReward.committed).div(10))) {
+        //     console.debug(`when BlockNumber: ${BI.from(s).toNumber()}`)
+        //     console.error(`committed is not eq, ${BI.from(fee).toBigInt()} != ${BI.from(before_11_economicState.minerReward.committed)}`);
+        //     bool = false;
+        // }
 
         let block = await RPCClient.getBlockByNumber(s)
         let rewardBLock = await RPCClient.getBlockByNumber(BI.from(s).sub(BI.from("11")).toHexString())

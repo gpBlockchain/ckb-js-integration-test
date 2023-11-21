@@ -1,4 +1,3 @@
-import axios from 'axios';
 import {camelCaseToUnderscore, mock_rpc} from "./test_util";
 
 describe('get_header', function () {

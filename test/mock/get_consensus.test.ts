@@ -1,5 +1,5 @@
 import { mock_rpc} from "./test_util";
-import axios from 'axios';
+
 describe('get_consensus', function () {
 
     it('[]', async () => {

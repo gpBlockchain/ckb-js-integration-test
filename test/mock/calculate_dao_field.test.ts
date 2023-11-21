@@ -1,8 +1,5 @@
 
 
-import axios from 'axios';
-
-
 import {mock_rpc} from "./test_util";
 
 

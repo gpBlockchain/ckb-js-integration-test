@@ -1,6 +1,16 @@
 import {RPC_DEBUG_SERVICE} from "../../config/config";
 import fetch from "cross-fetch";
 
+export async function Sleep(timeout: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, timeout));
+}
+
+export function hex(arrayBuffer) {
+    return Array.prototype.map.call(
+        new Uint8Array(arrayBuffer),
+        n => n.toString(16).padStart(2, "0")
+    ).join("");
+}
 
 export const request = async (
     id: number,
@@ -37,7 +47,7 @@ export const request = async (
 
     if (data.error !== undefined) {
         if (RPC_DEBUG_SERVICE) {
-            console.log( JSON.stringify(data.error))
+            console.log(JSON.stringify(data.error))
         }
         throw new Error(
             `light client request rpc failed with error: ${JSON.stringify(
@@ -46,7 +56,24 @@ export const request = async (
         );
     }
     if (RPC_DEBUG_SERVICE) {
-        console.log( JSON.stringify(data.result))
+        console.log(JSON.stringify(data.result))
     }
     return data.result;
+};
+
+
+export const get = async (
+    url: string,
+): Promise<any> => {
+    const res = await fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+    if (res.status !== 200) {
+        throw new Error(`light client request failed with HTTP code ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
 };

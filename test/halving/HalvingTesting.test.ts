@@ -63,7 +63,7 @@ describe('HalvingTesting Test', function () {
     })
 
     it.skip("get commit fee", async () => {
-        await getCommitFeeByBlockNumber(11074804)
+        await getCommitFeeByBlockNumber(11489539)
     })
 
     async function verifyCellBaseFeeByNum(s: string) {
@@ -78,21 +78,20 @@ describe('HalvingTesting Test', function () {
         // console.log("before_11_economicState:", JSON.stringify(before_11_economicState))
 
         // verify proposal fee
-        // let proposal_fee = await getProposalsRewardByBlockNumber(BI.from(s).toNumber())
-        // if (!BI.from(proposal_fee).eq(economicState.minerReward.proposal)) {
-        //     console.error(`proposal is not eq,${proposal_fee} != ${BI.from(economicState.minerReward.proposal).toBigInt()}`);
-        //     bool = false;
-        // }
+        let proposal_fee = await getProposalsRewardByBlockNumber(BI.from(s).toNumber())
+        if (!BI.from(proposal_fee).eq(before_11_economicState.minerReward.proposal)) {
+            console.error(`proposal is not eq,${proposal_fee} != ${BI.from(before_11_economicState.minerReward.proposal).toBigInt()}`);
+            bool = false;
+        }
 
         // verify 手续费
-        // let fee = await getCommitFeeByBlockNumber(BI.from(s).toNumber())
-        // if (!BI.from(fee).div(10).eq(BI.from(before_11_economicState.minerReward.committed).div(10))) {
-        //     console.debug(`when BlockNumber: ${BI.from(s).toNumber()}`)
-        //     console.error(`committed is not eq, ${BI.from(fee).toBigInt()} != ${BI.from(before_11_economicState.minerReward.committed)}`);
-        //     bool = false;
-        // }
+        let fee = await getCommitFeeByBlockNumber(BI.from(s).toNumber())
+        if (!BI.from(fee).div(10).eq(BI.from(before_11_economicState.minerReward.committed).div(10))) {
+            console.debug(`when BlockNumber: ${BI.from(s).toNumber()}`)
+            console.error(`committed is not eq, ${BI.from(fee).toBigInt()} != ${BI.from(before_11_economicState.minerReward.committed)}`);
+            bool = false;
+        }
 
-        let block = await RPCClient.getBlockByNumber(s)
         let rewardBLock = await RPCClient.getBlockByNumber(BI.from(s).sub(BI.from("11")).toHexString())
         let epoch = since.parseEpoch(rewardBLock.header.epoch)
         let baseReward = getBaseReward(epoch.number, epoch.length,epoch.index)
@@ -150,7 +149,7 @@ describe('HalvingTesting Test', function () {
     })
 
     it.skip("get proposal reward", async () => {
-        await getProposalsRewardByBlockNumber(11370836)
+        await getProposalsRewardByBlockNumber(11489539)
     })
 
     async function verifyBlockRange(begin: number, end: number) {
@@ -241,10 +240,6 @@ describe('HalvingTesting Test', function () {
                 let index = BI.from(transactions[i].inputs[j].previousOutput.index).toNumber();
                 let tx = await RPCClient.getTransaction(txHash);
                 let outputs = tx.transaction.outputs;
-                if (await checkIsWithdraw2Tx(txHash)) {
-                    const completed_withdrawals_capacities = await getWithdrawingCompensation(txHash)
-                    inputs_cap += BI.from(outputs[index].capacity).add(completed_withdrawals_capacities).toNumber();
-                }
                 inputs_cap += BI.from(outputs[index].capacity).toNumber();
             }
             for (let j = 0; j < transactions[i].outputs.length; j++) {
@@ -252,6 +247,11 @@ describe('HalvingTesting Test', function () {
             }
             console.log(`transaction${i}::inputs: ${inputs_cap} -> outputs: ${outputs_cap}`)
             sum_inputs += inputs_cap;
+            if (await checkIsWithdraw2Tx(transactions[i].hash)) {
+                const completed_withdrawals_capacities = await getWithdrawingCompensation(transactions[i].hash)
+                console.log(`dao withdraw 2 phase capacities:${completed_withdrawals_capacities}`);
+                sum_inputs += completed_withdrawals_capacities.toNumber();
+            }
             sum_outputs += outputs_cap;
         }
         let commit_fee = roundTo8thDecimal(0.6 * (sum_inputs - sum_outputs) / 10000_0000);
@@ -303,10 +303,6 @@ describe('HalvingTesting Test', function () {
                 let index = BI.from(transactions[i].inputs[j].previousOutput.index).toNumber();
                 let tx = await RPCClient.getTransaction(txHash);
                 let outputs = tx.transaction.outputs;
-                if (await checkIsWithdraw2Tx(txHash)) {
-                    const completed_withdrawals_capacities = await getWithdrawingCompensation(txHash)
-                    inputs_cap += BI.from(outputs[index].capacity).add(completed_withdrawals_capacities).toNumber();
-                }
                 inputs_cap += BI.from(outputs[index].capacity).toNumber();
             }
             for (let j = 0; j < transactions[i].outputs.length; j++) {
@@ -314,6 +310,11 @@ describe('HalvingTesting Test', function () {
             }
             console.log(`transaction${i}::inputs: ${inputs_cap} -> outputs: ${outputs_cap}`)
             sum_inputs += inputs_cap;
+            if (await checkIsWithdraw2Tx(transactions[i].hash)) {
+                const completed_withdrawals_capacities = await getWithdrawingCompensation(transactions[i].hash)
+                console.log(`dao withdraw 2 phase capacities:${completed_withdrawals_capacities}`);
+                sum_inputs += completed_withdrawals_capacities.toNumber();
+            }
             sum_outputs += outputs_cap;
         }
         let proposal_fee = roundTo8thDecimal(0.4 * (sum_inputs - sum_outputs) / 10000_0000);

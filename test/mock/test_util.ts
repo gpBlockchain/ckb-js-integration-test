@@ -1,10 +1,17 @@
 import {RPC} from "@ckb-lumos/rpc";
 import {get} from "../util/util";
+import {LightClientRPC} from "@ckb-lumos/light-client";
 
 export async function mock_rpc(){
     let data = get_method_and_params(expect.getState().currentTestName)
     return get_mock_test_data(data.method,data.params)
 }
+
+export async function mock_light_rpc(){
+    let data = get_method_and_params(expect.getState().currentTestName)
+    return get_mock_light_test_data(data.method,data.params)
+}
+
 async function get_mock_test_data(method: string, params: string) {
 
     let data = await get(`http://127.0.0.1:5000/test/${method}/${params}`)
@@ -12,6 +19,16 @@ async function get_mock_test_data(method: string, params: string) {
     let responseData = data['response']
     let RPCClient = new RPC(`http://127.0.0.1:5000/test/${method}/${params}`);
     return {RPCClient,requestData, responseData}
+
+}
+
+async function get_mock_light_test_data(method: string, params: string) {
+
+    let data = await get(`http://127.0.0.1:5001/test/${method}/${params}`)
+    let requestData = data['request']
+    let responseData = data['response']
+    let LightRPCClient = new LightClientRPC(`http://127.0.0.1:5001/test/${method}/${params}`);
+    return {LightRPCClient,requestData, responseData}
 
 }
 

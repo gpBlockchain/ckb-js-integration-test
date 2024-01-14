@@ -50,6 +50,7 @@
   "scripts": {
     "build:lumos": "cd lumos && pnpm install && pnpm run build",
     "test": "mocha --config test/runners/mocha/.mocharc.jsonc --reporter mochawesome",
-    "test-mock": "jest --verbose ./test/mock"
+    "test-mock": "jest --verbose ./test/mock",
+    "test-mock-light": "jest --verbose ./test/mockLight"
   }
 }

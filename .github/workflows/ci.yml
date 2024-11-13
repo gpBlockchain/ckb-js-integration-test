@@ -43,7 +43,7 @@ jobs:
           npm run test-mock
       - name: Publish reports
         if: failure()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: jfoa-build-reports-${{ runner.os }}
           path: test-report.html

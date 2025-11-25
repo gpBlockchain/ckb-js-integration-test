@@ -39,17 +39,24 @@ describe('HalvingTesting Test', function () {
         console.log("secondary_epoch_reward:", BI.from(conses["secondary_epoch_reward"]).toNumber())
     })
 
-    it.skip("get block Reward", async () => {
+    it("get block Reward", async () => {
 
         let tipHeader = await RPCClient.getTipHeader()
         let end = BI.from(tipHeader.number).toNumber()
-        let begin = BI.from(tipHeader.number).sub(50).toNumber()
-        await getBlockRewardRange(begin, end)
+        let begin = BI.from(tipHeader.number).sub(10).toNumber()
+        await getBlockRewardRange(17927783, 17927784)
     })
-    it.skip("verify block", async () => {
+    it("get_bllb",async ()=>{
+        let blockHash = await RPCClient.getBlockHash(BI.from(17927783).toHexString())
+        let state = await RPCClient.getBlockEconomicState(blockHash)
+        console.log(state)
+    })
+
+
+    it("verify block", async () => {
         let tipHeader = await RPCClient.getTipHeader()
         let end = BI.from(tipHeader.number).toNumber()
-        let begin = BI.from(tipHeader.number).sub(50).toNumber()
+        let begin = BI.from(tipHeader.number).sub(10).toNumber()
         await verifyBlockRange(begin, end)
     })
 
@@ -376,7 +383,7 @@ describe('HalvingTesting Test', function () {
         //(4658604079644744768, 10824404150119313, 272396222424927679, 597160254100000000)
         // 613698.63013698/1800 * (597160254100000000/4658604079644744768)=43.70365309818153
         // let miner =
-        return BI.from(secondary_epoch_reward).mul(decodeDao.C).div(BI.from(epochLength).mul(decodeDao.U.toNumber()))
+        return BI.from(secondary_epoch_reward).mul(decodeDao.U).div(BI.from(epochLength)).div(decodeDao.C.toNumber())
     }
 
     function decodeDao(dao: string): number[] {
